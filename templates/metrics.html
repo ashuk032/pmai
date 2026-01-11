@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Model Metrics</h1>
+{% if metrics %}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-white border rounded p-4">
+      <h2 class="text-sm font-medium text-slate-700 mb-2">Best Model</h2>
+      <p class="text-sm">{{ metrics.best_model }}</p>
+      {% set best = metrics.models[metrics.best_model] %}
+      <ul class="text-sm list-disc ml-5 space-y-1 mt-2">
+        <li>Accuracy: {{ '%.3f'|format(best.accuracy) }}</li>
+        <li>Precision: {{ '%.3f'|format(best.precision) }}</li>
+        <li>Recall: {{ '%.3f'|format(best.recall) }}</li>
+        <li>F1: {{ '%.3f'|format(best.f1) }}</li>
+        <li>ROC-AUC: {{ '%.3f'|format(best.roc_auc) }}</li>
+      </ul>
+    </div>
+    <div class="bg-white border rounded p-4">
+      <h2 class="text-sm font-medium text-slate-700 mb-2">Confusion Matrix</h2>
+      {% set cm = best.confusion_matrix %}
+      <table class="text-sm">
+        <tr><th></th><th class="pr-3">Pred 0</th><th>Pred 1</th></tr>
+        <tr><td class="pr-3">Actual 0</td><td class="pr-3">{{ cm[0][0] }}</td><td>{{ cm[0][1] }}</td></tr>
+        <tr><td class="pr-3">Actual 1</td><td class="pr-3">{{ cm[1][0] }}</td><td>{{ cm[1][1] }}</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="mt-6 bg-white border rounded p-4">
+    <h2 class="text-sm font-medium text-slate-700 mb-2">All Models</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="text-slate-500">
+          <tr>
+            <th class="text-left py-2 pr-4">Model</th>
+            <th class="text-left py-2 pr-4">Acc</th>
+            <th class="text-left py-2 pr-4">Prec</th>
+            <th class="text-left py-2 pr-4">Rec</th>
+            <th class="text-left py-2 pr-4">F1</th>
+            <th class="text-left py-2 pr-4">ROC-AUC</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for name, m in metrics.models.items() %}
+          <tr class="border-t">
+            <td class="py-2 pr-4">{{ name }}</td>
+            <td class="py-2 pr-4">{{ '%.3f'|format(m.accuracy) }}</td>
+            <td class="py-2 pr-4">{{ '%.3f'|format(m.precision) }}</td>
+            <td class="py-2 pr-4">{{ '%.3f'|format(m.recall) }}</td>
+            <td class="py-2 pr-4">{{ '%.3f'|format(m.f1) }}</td>
+            <td class="py-2 pr-4">{{ '%.3f'|format(m.roc_auc) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="bg-amber-50 border rounded p-4 text-sm text-amber-800">No metrics found. Train a model first from the Overview “(Re)Train” button.</div>
+{% endif %}
+{% endblock %}
