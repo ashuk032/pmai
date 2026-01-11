@@ -41,6 +41,8 @@
   <section class="bg-white border rounded-lg p-4">
     <h2 class="text-sm font-medium text-slate-600 mb-2">Risk Distribution</h2>
     <canvas id="riskChart" height="240"></canvas>
+    <script type="application/json" id="risk-labels">{{ labels|default([])|tojson }}</script>
+    <script type="application/json" id="risk-values">{{ risks|default([])|tojson }}</script>
   </section>
 </div>
 <script>
@@ -48,15 +50,24 @@
     const el = document.getElementById('riskChart');
     if (!el) return;
     const ctx = el.getContext('2d');
-    const labels = {{ labels|default([])|tojson }};
-    const risks = {{ risks|default([])|tojson }};
+    const labelsNode = document.getElementById('risk-labels');
+    const valuesNode = document.getElementById('risk-values');
+    let labelsData = [];
+    let risksData = [];
+    try {
+      labelsData = JSON.parse(labelsNode?.textContent || '[]');
+      risksData = JSON.parse(valuesNode?.textContent || '[]');
+    } catch (e) {
+      labelsData = [];
+      risksData = [];
+    }
     new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: labels,
+        labels: labelsData,
         datasets: [{
           label: 'Risk %',
-          data: risks,
+          data: risksData,
           backgroundColor: '#3b82f6'
         }]
       },
