@@ -77,6 +77,60 @@ def retrain():
     return redirect(url_for("index"))
 
 
+@app.route("/components")
+def components_list():
+    scored = get_latest_scored()
+    table = scored[["component_id", "component_type", "risk", "priority", "ttf_hours"]].copy()
+
+    # Filters
+    f_type = request.args.get("type", "")
+    f_prio = request.args.get("priority", "")
+    try:
+        th_high = float(request.args.get("thresh_high", 0.7))
+        th_med = float(request.args.get("thresh_med", 0.4))
+        if th_med > th_high:
+            th_med = th_high
+    except Exception:
+        th_high, th_med = 0.7, 0.4
+    def map_prio(r: float) -> str:
+        if r >= th_high:
+            return "High"
+        if r >= th_med:
+            return "Medium"
+        return "Low"
+    table["priority"] = table["risk"].apply(map_prio)
+    if f_type:
+        table = table[table["component_type"] == f_type]
+    if f_prio:
+        table = table[table["priority"] == f_prio]
+
+    # Pagination
+    page = max(1, int(request.args.get("page", 1)))
+    per_page = min(50, max(5, int(request.args.get("per_page", 15))))
+    total_items = int(len(table))
+    total_pages = max(1, (total_items + per_page - 1) // per_page)
+    page = min(page, total_pages)
+    start = (page - 1) * per_page
+    end = start + per_page
+    page_rows = table.sort_values("risk", ascending=False).iloc[start:end]
+
+    types = sorted(scored["component_type"].unique().tolist())
+
+    return render_template(
+        "components.html",
+        rows=page_rows.to_dict(orient="records"),
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages,
+        total_items=total_items,
+        types=types,
+        f_type=f_type,
+        f_prio=f_prio,
+        th_high=th_high,
+        th_med=th_med,
+    )
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
