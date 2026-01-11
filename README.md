@@ -15,11 +15,11 @@ pip install -r requirements.txt
 
 - Generate data, train, evaluate
 ```
-python src/train.py
+python -m src/train.py
 ```
 - Launch Streamlit dashboard
 ```
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
 ## Minimal Flask frontend (Tailwind + Chart.js)
@@ -27,7 +27,7 @@ streamlit run app.py
 Use this if you prefer a classic web app instead of Streamlit.
 
 ```
-python app_flask.py
+python -m app_flask.py
 ```
 
 Then open http://localhost:5000
