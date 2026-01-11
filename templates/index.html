@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Overview</h1>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <section class="lg:col-span-2 bg-white border rounded-lg p-4">
+    <h2 class="text-sm font-medium text-slate-600 mb-2">Component Risk (Top)</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="text-slate-500">
+          <tr>
+            <th class="text-left py-2 pr-4">ID</th>
+            <th class="text-left py-2 pr-4">Type</th>
+            <th class="text-left py-2 pr-4">Risk %</th>
+            <th class="text-left py-2 pr-4">Priority</th>
+            <th class="text-left py-2 pr-4">TTF (hrs)</th>
+            <th class="text-left py-2 pr-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr class="border-t">
+            <td class="py-2 pr-4">{{ r.component_id }}</td>
+            <td class="py-2 pr-4">{{ r.component_type }}</td>
+            <td class="py-2 pr-4 font-medium">{{ (r.risk * 100) | round(1) }}</td>
+            <td class="py-2 pr-4">
+              <span class="px-2 py-0.5 rounded text-xs
+                {% if r.priority == 'High' %} bg-red-100 text-red-700
+                {% elif r.priority == 'Medium' %} bg-amber-100 text-amber-700
+                {% else %} bg-emerald-100 text-emerald-700 {% endif %}">
+                {{ r.priority }}
+              </span>
+            </td>
+            <td class="py-2 pr-4">{{ r.ttf_hours | round(1) }}</td>
+            <td class="py-2 pr-4"><a class="text-blue-600 hover:underline" href="/component/{{ r.component_id }}">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="bg-white border rounded-lg p-4">
+    <h2 class="text-sm font-medium text-slate-600 mb-2">Risk Distribution</h2>
+    <canvas id="riskChart" height="240"></canvas>
+  </section>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const el = document.getElementById('riskChart');
+    if (!el) return;
+    const ctx = el.getContext('2d');
+    const labels = {{ labels|default([])|tojson }};
+    const risks = {{ risks|default([])|tojson }};
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Risk %',
+          data: risks,
+          backgroundColor: '#3b82f6'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, max: 100 } },
+        plugins: { legend: { display: false } }
+      }
+    });
+  });
+</script>
+{% endblock %}
